@@ -1,0 +1,787 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+body{font-family:var(--font-sans)}
+.screen{padding:1rem 0}
+.hidden{display:none!important}
+h2.title{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:1.25rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.lbl{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+.row{display:flex;gap:10px;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:80px}
+input[type=range]{flex:1}
+.swatch-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1rem}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0}
+.swatch.sel{border-color:var(--color-text-primary)}
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem}
+.opt-btn{padding:9px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-secondary);text-align:center;transition:all .15s}
+.opt-btn.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
+.start-btn{width:100%;padding:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-primary);background:var(--color-background-primary);font-size:15px;font-weight:500;cursor:pointer;color:var(--color-text-primary);margin-top:0.25rem;transition:all .15s}
+.start-btn:hover{background:var(--color-background-secondary)}
+.preview-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;font-size:13px;font-weight:500;flex-shrink:0}
+.avatar-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.hud{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:0.75rem}
+.hud-pill{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 11px;font-size:12px;color:var(--color-text-secondary)}
+.hud-pill b{color:var(--color-text-primary);font-weight:500}
+.prog-wrap{background:var(--color-background-secondary);border-radius:99px;height:4px;margin-bottom:1.1rem}
+.prog-fill{height:4px;border-radius:99px;transition:width .3s}
+.num-big{font-size:46px;font-weight:500;text-align:center;color:var(--color-text-primary);letter-spacing:-2px;margin:0.4rem 0 0.2rem}
+.num-hint{font-size:13px;color:var(--color-text-secondary);text-align:center;min-height:16px;margin-bottom:0.75rem}
+.game-tag{font-size:11px;text-align:center;color:var(--color-text-tertiary);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:.5px}
+.feedback{text-align:center;font-size:13px;font-weight:500;min-height:18px;margin:0.6rem 0}
+.feedback.good{color:#3B6D11}.feedback.bad{color:#A32D2D}
+.next-btn{display:block;margin:0.75rem auto 0;padding:8px 26px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:14px;cursor:pointer;color:var(--color-text-primary)}
+.next-btn:hover{background:var(--color-background-primary)}
+.chart-tbl{width:100%;border-collapse:collapse;margin-bottom:0.75rem;table-layout:fixed}
+.chart-tbl th{font-size:11px;color:var(--color-text-secondary);font-weight:400;padding:5px 3px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary)}
+.chart-tbl th:first-child{text-align:left}
+.chart-tbl td{padding:7px 3px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary)}
+.chart-tbl td:first-child{text-align:left;font-size:12px;color:var(--color-text-secondary)}
+.cb{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s;margin:auto}
+.cb:hover{background:var(--color-background-secondary)}
+.cb.yes{background:#EAF3DE;border-color:#639922;color:#3B6D11}
+.cb.no{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D}
+.cb.correct{background:#EAF3DE;border-color:#639922;color:#3B6D11;box-shadow:0 0 0 3px #C0DD97}
+.cb.wrong{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D;box-shadow:0 0 0 3px #F7C1C1}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px;margin:0.6rem 0}
+.bucket{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:9px 5px;min-height:62px;cursor:pointer;transition:all .15s;text-align:center}
+.bucket:hover{background:var(--color-background-secondary)}
+.bucket.sel{border-style:solid;border-color:#378ADD;background:#E6F1FB}
+.bucket.correct-b{border-style:solid;border-color:#639922;background:#EAF3DE}
+.bucket.wrong-b{border-style:solid;border-color:#E24B4A;background:#FCEBEB}
+.bucket-name{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:2px}
+.bucket-ex{font-size:10px;color:var(--color-text-tertiary)}
+.tf-stmt{font-size:15px;text-align:center;color:var(--color-text-primary);line-height:1.55;margin:0.4rem 0 1.1rem;min-height:46px}
+.tf-btns{display:flex;gap:10px;justify-content:center}
+.tf-btn{flex:1;max-width:125px;padding:11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:15px;font-weight:500;cursor:pointer;transition:all .15s}
+.tf-btn:hover{background:var(--color-background-primary)}
+.tf-btn.correct{background:#EAF3DE;border-color:#639922}
+.tf-btn.wrong{background:#FCEBEB;border-color:#E24B4A}
+.mcq-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0.6rem 0}
+.mcq-opt{padding:9px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:13px;text-align:center;transition:all .15s;color:var(--color-text-primary)}
+.mcq-opt:hover{background:var(--color-background-primary)}
+.mcq-opt.correct{background:#EAF3DE;border-color:#639922;color:#3B6D11}
+.mcq-opt.wrong{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D}
+.fill-wrap{display:flex;gap:8px;margin:0.6rem 0 0.4rem;justify-content:center;align-items:center}
+.fill-wrap input{max-width:150px;text-align:center;font-size:17px}
+.fill-sub{padding:7px 18px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:13px;cursor:pointer;color:var(--color-text-primary)}
+.pick-bar{margin-bottom:0.75rem}
+.gtype-btn{padding:5px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:12px;cursor:pointer;color:var(--color-text-secondary);transition:all .15s;margin-bottom:5px;margin-right:5px;display:inline-block}
+.gtype-btn.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
+.lb-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lb-rank{width:26px;font-size:12px;font-weight:500;color:var(--color-text-secondary);text-align:center;flex-shrink:0}
+.lb-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.lb-name{flex:1;font-size:13px;color:var(--color-text-primary)}
+.lb-meta{font-size:11px;color:var(--color-text-secondary)}
+.lb-score{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.end-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:9px;margin-bottom:1.1rem}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:0.9rem;text-align:center}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.color-picker-wrap{display:flex;gap:6px;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap}
+.hex-input{width:90px;font-size:13px;padding:4px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.color-preview{width:32px;height:32px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);flex-shrink:0}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;margin-top:14px}
+.mode-subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:1rem}
+.mode-subject-btn{padding:10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-secondary);text-align:center;transition:all .15s}
+.mode-subject-btn.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
+.pyth-diagram{display:flex;justify-content:center;margin:0.5rem 0 0.75rem}
+.initials-row{display:flex;gap:8px;align-items:center;margin-bottom:1rem}
+.initials-row input{width:52px;text-align:center;font-size:16px;font-weight:500}
+</style>
+
+<h2 class="sr-only">Number, Pythagorean theorem, and square root classifier game with setup and leaderboard</h2>
+
+<div id="screen-setup" class="screen">
+  <h2 class="title">Math quest — setup</h2>
+  <div class="card">
+
+    <div class="avatar-row">
+      <div class="preview-badge" id="prev-badge" style="background:#B5D4F4;color:#0C447C">AB</div>
+      <div>
+        <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)" id="prev-name">Your name</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">Your profile</div>
+      </div>
+    </div>
+
+    <div class="lbl">Your name</div>
+    <div class="row"><input type="text" id="cfg-name" placeholder="Enter name…" maxlength="20" oninput="updatePreview()"></div>
+
+    <div class="lbl">Custom initials (2 characters)</div>
+    <div class="initials-row">
+      <input type="text" id="cfg-initials" placeholder="AB" maxlength="2" oninput="updatePreview()">
+      <span style="font-size:12px;color:var(--color-text-tertiary)">Leave blank to auto-generate from name</span>
+    </div>
+
+    <div class="section-title">Badge & game colors</div>
+    <div class="lbl">Badge background</div>
+    <div class="swatch-row" id="swatch-bg"></div>
+    <div class="color-picker-wrap">
+      <div class="color-preview" id="prev-bg-swatch" style="background:#B5D4F4"></div>
+      <input class="hex-input" type="text" id="hex-bg" placeholder="#B5D4F4" maxlength="7" oninput="hexChanged('bg')">
+      <span style="font-size:12px;color:var(--color-text-tertiary)">custom hex</span>
+    </div>
+
+    <div class="lbl">Badge & game text color</div>
+    <div class="swatch-row" id="swatch-tx"></div>
+    <div class="color-picker-wrap">
+      <div class="color-preview" id="prev-tx-swatch" style="background:#0C447C"></div>
+      <input class="hex-input" type="text" id="hex-tx" placeholder="#0C447C" maxlength="7" oninput="hexChanged('tx')">
+      <span style="font-size:12px;color:var(--color-text-tertiary)">custom hex</span>
+    </div>
+
+    <div class="lbl">Game card background color</div>
+    <div class="swatch-row" id="swatch-card"></div>
+    <div class="color-picker-wrap">
+      <div class="color-preview" id="prev-card-swatch" style="background:#ffffff"></div>
+      <input class="hex-input" type="text" id="hex-card" placeholder="#ffffff" maxlength="7" oninput="hexChanged('card')">
+      <span style="font-size:12px;color:var(--color-text-tertiary)">custom hex</span>
+    </div>
+
+    <div class="section-title">Subject mode</div>
+    <div class="mode-subject-grid">
+      <div class="mode-subject-btn active" onclick="setSubject('numbers',this)">Number types<br><span style="font-size:11px;color:var(--color-text-tertiary)">Natural, integer, rational…</span></div>
+      <div class="mode-subject-btn" onclick="setSubject('pyth',this)">Pythagorean theorem<br><span style="font-size:11px;color:var(--color-text-tertiary)">Find missing sides</span></div>
+      <div class="mode-subject-btn" onclick="setSubject('sqrt',this)">Square roots<br><span style="font-size:11px;color:var(--color-text-tertiary)">Simplify and evaluate</span></div>
+      <div class="mode-subject-btn" onclick="setSubject('all',this)">All subjects<br><span style="font-size:11px;color:var(--color-text-tertiary)">Mix of everything</span></div>
+    </div>
+
+    <div class="lbl">Difficulty</div>
+    <div class="opt-grid">
+      <div class="opt-btn active" onclick="setOpt('diff','easy',this)">Easy<br><span style="font-size:11px;color:var(--color-text-tertiary)">Hints shown</span></div>
+      <div class="opt-btn" onclick="setOpt('diff','medium',this)">Medium<br><span style="font-size:11px;color:var(--color-text-tertiary)">No hints</span></div>
+      <div class="opt-btn" onclick="setOpt('diff','hard',this)">Hard<br><span style="font-size:11px;color:var(--color-text-tertiary)">Tougher questions</span></div>
+    </div>
+
+    <div class="lbl">Mini-game mode</div>
+    <div class="opt-grid">
+      <div class="opt-btn active" onclick="setOpt('mode','random',this)">Random<br><span style="font-size:11px;color:var(--color-text-tertiary)">Mix each round</span></div>
+      <div class="opt-btn" onclick="setOpt('mode','pick',this)">Pick each turn<br><span style="font-size:11px;color:var(--color-text-tertiary)">You choose</span></div>
+      <div class="opt-btn" onclick="setOpt('mode','single',this)">One type<br><span style="font-size:11px;color:var(--color-text-tertiary)">Choose below</span></div>
+    </div>
+
+    <div id="single-picker" class="hidden" style="margin-bottom:1rem">
+      <div class="lbl">Which mini-game?</div>
+      <div class="opt-grid" id="single-opts"></div>
+    </div>
+
+    <div class="lbl">Number of turns: <b id="turns-out">10</b></div>
+    <div class="row"><input type="range" id="cfg-turns" min="5" max="100" step="5" value="10" oninput="document.getElementById('turns-out').textContent=this.value"></div>
+
+    <button class="start-btn" onclick="startGame()">Start game</button>
+  </div>
+</div>
+
+<div id="screen-game" class="screen hidden">
+  <div class="hud">
+    <div class="hud-pill">Score: <b id="hud-score">0</b></div>
+    <div class="hud-pill">Streak: <b id="hud-streak">0</b></div>
+    <div class="hud-pill">Round: <b id="hud-round">1</b> / <b id="hud-total">10</b></div>
+    <div class="hud-pill" id="hud-name-pill"></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div id="pick-bar" class="hidden pick-bar">
+    <div class="lbl">Pick this round's mini-game:</div>
+    <div id="pick-bar-btns"></div>
+  </div>
+  <div class="card" id="game-area"></div>
+</div>
+
+<div id="screen-end" class="screen hidden">
+  <h2 class="title">Game over!</h2>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="avatar-row">
+      <div class="preview-badge" id="end-badge" style="background:#B5D4F4;color:#0C447C;margin-right:2px">AB</div>
+      <div>
+        <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)" id="end-name"></div>
+        <div style="font-size:12px;color:var(--color-text-secondary)" id="end-diff"></div>
+      </div>
+    </div>
+    <div class="end-stats" id="end-stats"></div>
+    <div style="display:flex;gap:8px">
+      <button class="next-btn" style="flex:1;margin-top:0" onclick="showScreen('setup')">Change settings</button>
+      <button class="next-btn" style="flex:1;margin-top:0" onclick="restartSame()">Play again</button>
+    </div>
+  </div>
+  <h2 class="title">Leaderboard</h2>
+  <div class="card"><div id="lb-list"></div><div style="margin-top:0.75rem;font-size:11px;color:var(--color-text-tertiary);text-align:center">Scores saved this session</div></div>
+</div>
+
+<script>
+const BG_SWATCHES=['#B5D4F4','#9FE1CB','#CECBF6','#F5C4B3','#F4C0D1','#FAC775','#C0DD97','#D3D1C7','#F09595','#5DCAA5','#7F77DD','#EF9F27','#E6F1FB','#EAF3DE','#FAEEDA','#FCEBEB'];
+const TX_SWATCHES=['#0C447C','#085041','#3C3489','#712B13','#72243E','#633806','#27500A','#444441','#791F1F','#1D9E75','#534AB7','#BA7517','#2C2C2A','#185FA5','#3B6D11','#A32D2D'];
+const CARD_SWATCHES=['#ffffff','#F1EFE8','#E6F1FB','#EAF3DE','#FAEEDA','#FBEAF0','#E1F5EE','#EEEDFE','#FAECE7','#FCEBEB','#F0F4FF','#FFF8E7'];
+
+let cfg={name:'Player',initials:'',bgColor:'#B5D4F4',txColor:'#0C447C',cardColor:'#ffffff',diff:'easy',mode:'random',singleGame:'chart',turns:10,subject:'numbers'};
+let state={score:0,streak:0,maxStreak:0,correct:0,round:1,answered:false,currentNum:null,currentTF:null,currentMCQ:null,currentGame:null,currentPyth:null,currentSqrt:null,cellState:{}};
+let leaderboard=[];
+
+const GAME_TYPES_NUMBERS=['chart','sort','tf','mcq','fill'];
+const GAME_TYPES_PYTH=['pyth_mcq','pyth_fill','pyth_tf'];
+const GAME_TYPES_SQRT=['sqrt_mcq','sqrt_fill','sqrt_tf'];
+const GAME_LABELS={chart:'Chart check',sort:'Sort it',tf:'True/false',mcq:'Multi-choice',fill:'Fill in',pyth_mcq:'Pyth choice',pyth_fill:'Pyth solve',pyth_tf:'Pyth true/false',sqrt_mcq:'Sqrt choice',sqrt_fill:'Sqrt solve',sqrt_tf:'Sqrt true/false'};
+
+function getGameTypes(){
+  if(cfg.subject==='numbers') return GAME_TYPES_NUMBERS;
+  if(cfg.subject==='pyth') return GAME_TYPES_PYTH;
+  if(cfg.subject==='sqrt') return GAME_TYPES_SQRT;
+  return [...GAME_TYPES_NUMBERS,...GAME_TYPES_PYTH,...GAME_TYPES_SQRT];
+}
+
+const EASY_NUMS=[
+  {d:'5',h:'',nat:true,int:true,rat:true,irr:false,real:true,label:'natural'},
+  {d:'−3',h:'',nat:false,int:true,rat:true,irr:false,real:true,label:'integer'},
+  {d:'0',h:'',nat:false,int:true,rat:true,irr:false,real:true,label:'integer'},
+  {d:'1/2',h:'= 0.5',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+  {d:'0.333…',h:'= 1/3',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+  {d:'√2',h:'≈ 1.414…',nat:false,int:false,rat:false,irr:true,real:true,label:'irrational'},
+  {d:'π',h:'≈ 3.14159…',nat:false,int:false,rat:false,irr:true,real:true,label:'irrational'},
+  {d:'12',h:'',nat:true,int:true,rat:true,irr:false,real:true,label:'natural'},
+  {d:'−7',h:'',nat:false,int:true,rat:true,irr:false,real:true,label:'integer'},
+  {d:'0.75',h:'= 3/4',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+];
+const HARD_NUMS=[
+  {d:'√9',h:'= 3',nat:true,int:true,rat:true,irr:false,real:true,label:'natural'},
+  {d:'−0.5',h:'= −1/2',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+  {d:'22/7',h:'≈ 3.142 (not π!)',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+  {d:'e',h:'≈ 2.71828…',nat:false,int:false,rat:false,irr:true,real:true,label:'irrational'},
+  {d:'0.1̄6̄',h:'= 1/6',nat:false,int:false,rat:true,irr:false,real:true,label:'rational'},
+  {d:'√5',h:'≈ 2.236…',nat:false,int:false,rat:false,irr:true,real:true,label:'irrational'},
+  {d:'−√4',h:'= −2',nat:false,int:true,rat:true,irr:false,real:true,label:'integer'},
+  {d:'0.999…',h:'= 1 exactly',nat:true,int:true,rat:true,irr:false,real:true,label:'natural'},
+];
+const ALL_NUMS=[...EASY_NUMS,...HARD_NUMS];
+
+const TF_EASY=[
+  {s:'Every natural number is also an integer.',a:true,e:'Naturals (1,2,3…) are a subset of integers.'},
+  {s:'−5 is a natural number.',a:false,e:'Natural numbers are positive only.'},
+  {s:'0.333… = 1/3, so it is rational.',a:true,e:'Repeating decimals are always rational.'},
+  {s:'All integers are rational numbers.',a:true,e:'Any integer n = n/1.'},
+  {s:'π is a rational number.',a:false,e:'π is irrational — its decimal never repeats.'},
+  {s:'Every real number is rational.',a:false,e:'Irrationals like √2 are real but not rational.'},
+  {s:'0 is a whole number.',a:true,e:'Whole numbers are {0, 1, 2, 3, …}.'},
+  {s:'Natural numbers include negative numbers.',a:false,e:'Naturals are positive counting numbers only.'},
+];
+const TF_HARD=[
+  {s:'√4 is irrational.',a:false,e:'√4 = 2, which is a natural number.'},
+  {s:'22/7 is irrational.',a:false,e:'22/7 is a fraction — rational. It only approximates π.'},
+  {s:'0.999… equals 1 exactly.',a:true,e:'Proven fact: 1/3 × 3 = 0.999… = 1.'},
+  {s:'e (Euler\'s number) is rational.',a:false,e:'e is transcendental and irrational.'},
+  {s:'All irrational numbers are real.',a:true,e:'Irrationals are a subset of real numbers.'},
+];
+
+const MCQ_POOL=[
+  {q:'Which of these is irrational?',opts:['1/3','0.25','√7','−4'],a:2},
+  {q:'Which is an integer but NOT natural?',opts:['5','0','−3','1/2'],a:2},
+  {q:'Which is rational?',opts:['π','√3','e','0.666…'],a:3},
+  {q:'Most specific category for −2/5?',opts:['Integer','Rational','Natural','Irrational'],a:1},
+  {q:'Which is natural, integer AND rational?',opts:['−1','0.5','7','π'],a:2},
+  {q:'What do rational & irrational share?',opts:['Both integers','Both real','Both natural','Nothing'],a:1},
+  {q:'Non-repeating, non-terminating decimal?',opts:['1/7','3/4','√2','−5'],a:2},
+  {q:'22/7 is which type?',opts:['Irrational','Integer','Rational','Natural'],a:2},
+];
+
+const PYTH_EASY=[
+  {a:3,b:4,c:5,find:'c',hint:'Use a²+b²=c²',diagram:true},
+  {a:6,b:8,c:10,find:'c',hint:'Use a²+b²=c²',diagram:true},
+  {a:5,b:12,c:13,find:'c',hint:'Use a²+b²=c²',diagram:true},
+  {a:8,b:15,c:17,find:'c',hint:'Use a²+b²=c²',diagram:true},
+  {a:3,b:4,c:5,find:'a',hint:'Use c²−b²=a²',diagram:true},
+  {a:6,b:8,c:10,find:'b',hint:'Use c²−a²=b²',diagram:true},
+  {a:9,b:12,c:15,find:'c',hint:'Use a²+b²=c²',diagram:true},
+  {a:5,b:12,c:13,find:'b',hint:'Use c²−a²=b²',diagram:true},
+];
+const PYTH_HARD=[
+  {a:7,b:24,c:25,find:'c',hint:'7²+24²=c²',diagram:true},
+  {a:20,b:21,c:29,find:'c',hint:'20²+21²=c²',diagram:true},
+  {a:9,b:40,c:41,find:'b',hint:'c²−a²=b²',diagram:true},
+  {a:11,b:60,c:61,find:'a',hint:'c²−b²=a²',diagram:true},
+  {a:28,b:45,c:53,find:'c',hint:'28²+45²=c²',diagram:true},
+];
+
+const PYTH_TF=[
+  {s:'In a right triangle with legs 3 and 4, the hypotenuse is 5.',a:true,e:'3²+4²=9+16=25=5²  ✓'},
+  {s:'If a=5, b=5, then c=10.',a:false,e:'5²+5²=50, so c=√50≈7.07, not 10.'},
+  {s:'A triangle with sides 5, 12, 13 is a right triangle.',a:true,e:'5²+12²=25+144=169=13²  ✓'},
+  {s:'The hypotenuse is always the shortest side.',a:false,e:'The hypotenuse is always the LONGEST side.'},
+  {s:'If a=8, b=15, then c=17.',a:true,e:'8²+15²=64+225=289=17²  ✓'},
+  {s:'You can use a²+b²=c² on any triangle.',a:false,e:'It only works for right triangles.'},
+  {s:'A 6-8-10 triangle is a right triangle.',a:true,e:'6²+8²=36+64=100=10²  ✓'},
+  {s:'If c=13 and a=5, then b=8.',a:false,e:'b²=13²−5²=169−25=144, so b=12, not 8.'},
+];
+
+const PYTH_MCQ=[
+  {q:'Legs a=3, b=4. Find hypotenuse c.',opts:['5','6','7','√7'],a:0},
+  {q:'Legs a=6, b=8. Find hypotenuse c.',opts:['12','10','14','√100'],a:1},
+  {q:'Hypotenuse c=13, leg a=5. Find b.',opts:['8','10','12','11'],a:2},
+  {q:'Legs a=5, b=12. Find c.',opts:['13','17','15','√119'],a:0},
+  {q:'Hypotenuse c=10, leg b=8. Find a.',opts:['4','6','2','√164'],a:1},
+  {q:'Legs a=9, b=12. Find c.',opts:['21','15','18','√225'],a:1},
+  {q:'Which set are Pythagorean triple sides?',opts:['2,3,4','3,4,6','5,12,13','6,7,8'],a:2},
+  {q:'Legs a=7, b=24. Find c.',opts:['25','26','31','√625'],a:0},
+];
+
+const SQRT_EASY=[
+  {expr:'√25',ans:5,hint:'5×5=25',opts:[4,5,6,7]},
+  {expr:'√36',ans:6,hint:'6×6=36',opts:[5,6,7,8]},
+  {expr:'√49',ans:7,hint:'7×7=49',opts:[6,7,8,9]},
+  {expr:'√81',ans:9,hint:'9×9=81',opts:[7,8,9,10]},
+  {expr:'√100',ans:10,hint:'10×10=100',opts:[8,9,10,11]},
+  {expr:'√16',ans:4,hint:'4×4=16',opts:[3,4,5,6]},
+  {expr:'√144',ans:12,hint:'12×12=144',opts:[10,11,12,13]},
+  {expr:'√64',ans:8,hint:'8×8=64',opts:[6,7,8,9]},
+];
+const SQRT_HARD=[
+  {expr:'√169',ans:13,hint:'13×13=169',opts:[11,12,13,14]},
+  {expr:'√225',ans:15,hint:'15×15=225',opts:[13,14,15,16]},
+  {expr:'√289',ans:17,hint:'17×17=289',opts:[15,16,17,18]},
+  {expr:'√400',ans:20,hint:'20×20=400',opts:[18,19,20,21]},
+  {expr:'√196',ans:14,hint:'14×14=196',opts:[12,13,14,15]},
+  {expr:'√324',ans:18,hint:'18×18=324',opts:[16,17,18,19]},
+  {expr:'√2',ans:'≈1.41',hint:'Between 1 and 2',opts:['≈1.41','≈1.73','≈2.24','≈2.65']},
+  {expr:'√3',ans:'≈1.73',hint:'Between 1 and 2',opts:['≈1.41','≈1.73','≈2.24','≈3.14']},
+  {expr:'√5',ans:'≈2.24',hint:'Between 2 and 3',opts:['≈1.73','≈2.00','≈2.24','≈2.65']},
+];
+
+const SQRT_TF=[
+  {s:'√25 = 5',a:true,e:'5 × 5 = 25  ✓'},
+  {s:'√49 = 6',a:false,e:'√49 = 7, because 7 × 7 = 49.'},
+  {s:'√100 = 10',a:true,e:'10 × 10 = 100  ✓'},
+  {s:'√2 is a rational number.',a:false,e:'√2 is irrational — it cannot be written as a fraction.'},
+  {s:'√81 = 9',a:true,e:'9 × 9 = 81  ✓'},
+  {s:'√16 = 4',a:true,e:'4 × 4 = 16  ✓'},
+  {s:'Every square root is irrational.',a:false,e:'√25=5, √36=6 etc. are rational (whole numbers).'},
+  {s:'√64 = 8',a:true,e:'8 × 8 = 64  ✓'},
+  {s:'√144 = 11',a:false,e:'√144 = 12, because 12 × 12 = 144.'},
+  {s:'√9 = 3',a:true,e:'3 × 3 = 9  ✓'},
+];
+
+const SQRT_MCQ=[
+  {q:'What is √25?',opts:['4','5','6','7'],a:1},
+  {q:'What is √81?',opts:['7','8','9','10'],a:2},
+  {q:'What is √144?',opts:['10','11','12','13'],a:2},
+  {q:'Which of these is a perfect square?',opts:['50','72','100','150'],a:2},
+  {q:'What is √169?',opts:['11','12','13','14'],a:2},
+  {q:'Is √2 rational or irrational?',opts:['Rational','Irrational','Integer','Natural'],a:1},
+  {q:'What is √36?',opts:['5','6','7','8'],a:1},
+  {q:'√225 = ?',opts:['13','14','15','16'],a:2},
+];
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+let numPool=[],tfPool=[],mcqPool=[],pythPool=[],pythTFPool=[],pythMCQPool=[],sqrtPool=[],sqrtTFPool=[],sqrtMCQPool=[];
+let ni=0,ti=0,mi=0,pi=0,pti=0,pmi=0,si=0,sti=0,smi=0;
+
+function resetPools(){
+  const nums=cfg.diff==='hard'?ALL_NUMS:cfg.diff==='medium'?ALL_NUMS:EASY_NUMS;
+  numPool=shuffle(nums);ni=0;
+  const tfs=cfg.diff==='hard'?[...TF_EASY,...TF_HARD]:TF_EASY;
+  tfPool=shuffle(tfs);ti=0;
+  mcqPool=shuffle(MCQ_POOL);mi=0;
+  const pyths=cfg.diff==='hard'?[...PYTH_EASY,...PYTH_HARD]:PYTH_EASY;
+  pythPool=shuffle(pyths);pi=0;
+  pythTFPool=shuffle(PYTH_TF);pti=0;
+  pythMCQPool=shuffle(PYTH_MCQ);pmi=0;
+  const sqrts=cfg.diff==='hard'?[...SQRT_EASY,...SQRT_HARD]:SQRT_EASY;
+  sqrtPool=shuffle(sqrts);si=0;
+  sqrtTFPool=shuffle(SQRT_TF);sti=0;
+  sqrtMCQPool=shuffle(SQRT_MCQ);smi=0;
+}
+
+function getNum(){if(ni>=numPool.length){numPool=shuffle(numPool);ni=0;}return numPool[ni++];}
+function getTF(){if(ti>=tfPool.length){tfPool=shuffle(tfPool);ti=0;}return tfPool[ti++];}
+function getMCQ(){if(mi>=mcqPool.length){mcqPool=shuffle(mcqPool);mi=0;}return mcqPool[mi++];}
+function getPyth(){if(pi>=pythPool.length){pythPool=shuffle(pythPool);pi=0;}return pythPool[pi++];}
+function getPythTF(){if(pti>=pythTFPool.length){pythTFPool=shuffle(pythTFPool);pti=0;}return pythTFPool[pti++];}
+function getPythMCQ(){if(pmi>=pythMCQPool.length){pythMCQPool=shuffle(pythMCQPool);pmi=0;}return pythMCQPool[pmi++];}
+function getSqrt(){if(si>=sqrtPool.length){sqrtPool=shuffle(sqrtPool);si=0;}return sqrtPool[si++];}
+function getSqrtTF(){if(sti>=sqrtTFPool.length){sqrtTFPool=shuffle(sqrtTFPool);sti=0;}return sqrtTFPool[sti++];}
+function getSqrtMCQ(){if(smi>=sqrtMCQPool.length){sqrtMCQPool=shuffle(sqrtMCQPool);smi=0;}return sqrtMCQPool[smi++];}
+
+function buildSwatches(id,colors,cfgKey,previewId,hexId){
+  const el=document.getElementById(id);
+  el.innerHTML='';
+  colors.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.className='swatch'+(cfg[cfgKey]===c?' sel':'');
+    d.style.background=c;
+    d.onclick=()=>{
+      cfg[cfgKey]=c;
+      document.getElementById(hexId).value=c;
+      document.getElementById(previewId).style.background=c;
+      el.querySelectorAll('.swatch').forEach((x,j)=>x.classList.toggle('sel',j===i));
+      updatePreview();
+    };
+    el.appendChild(d);
+  });
+}
+
+function hexChanged(key){
+  const map={bg:{cfg:'bgColor',prev:'prev-bg-swatch',swatchId:'swatch-bg',colors:BG_SWATCHES},tx:{cfg:'txColor',prev:'prev-tx-swatch',swatchId:'swatch-tx',colors:TX_SWATCHES},card:{cfg:'cardColor',prev:'prev-card-swatch',swatchId:'swatch-card',colors:CARD_SWATCHES}};
+  const m=map[key];
+  const val=document.getElementById('hex-'+key).value;
+  if(/^#[0-9a-fA-F]{6}$/.test(val)){
+    cfg[m.cfg]=val;
+    document.getElementById(m.prev).style.background=val;
+    document.querySelectorAll('#'+m.swatchId+' .swatch').forEach(s=>s.classList.remove('sel'));
+    updatePreview();
+  }
+}
+
+function buildSetup(){
+  buildSwatches('swatch-bg',BG_SWATCHES,'bgColor','prev-bg-swatch','hex-bg');
+  buildSwatches('swatch-tx',TX_SWATCHES,'txColor','prev-tx-swatch','hex-tx');
+  buildSwatches('swatch-card',CARD_SWATCHES,'cardColor','prev-card-swatch','hex-card');
+  document.getElementById('hex-bg').value=cfg.bgColor;
+  document.getElementById('hex-tx').value=cfg.txColor;
+  document.getElementById('hex-card').value=cfg.cardColor;
+  rebuildSingleOpts();
+}
+
+function rebuildSingleOpts(){
+  const so=document.getElementById('single-opts');
+  so.innerHTML='';
+  const types=getGameTypes();
+  types.forEach((g,i)=>{
+    const d=document.createElement('div');
+    d.className='opt-btn'+(cfg.singleGame===g?' active':'');
+    d.textContent=GAME_LABELS[g];
+    d.onclick=()=>{cfg.singleGame=g;so.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('active'));d.classList.add('active')};
+    so.appendChild(d);
+  });
+  if(!types.includes(cfg.singleGame)){cfg.singleGame=types[0];}
+}
+
+function setSubject(s,el){
+  cfg.subject=s;
+  document.querySelectorAll('.mode-subject-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  rebuildSingleOpts();
+}
+
+function updatePreview(){
+  const name=document.getElementById('cfg-name').value||'';
+  const customInit=document.getElementById('cfg-initials').value.toUpperCase()||'';
+  cfg.name=name||'Player';
+  const initials=customInit||(name.length>=2?name.slice(0,2).toUpperCase():name.slice(0,1).toUpperCase()||'?');
+  cfg.initials=initials;
+  const b=document.getElementById('prev-badge');
+  b.textContent=initials;b.style.background=cfg.bgColor;b.style.color=cfg.txColor;
+  document.getElementById('prev-name').textContent=name||'Your name';
+}
+
+function setOpt(key,val,el){
+  cfg[key]=val;
+  el.closest('.opt-grid').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if(key==='mode') document.getElementById('single-picker').classList.toggle('hidden',val!=='single');
+}
+
+function startGame(){
+  cfg.turns=parseInt(document.getElementById('cfg-turns').value);
+  cfg.name=document.getElementById('cfg-name').value||'Player';
+  const customInit=document.getElementById('cfg-initials').value.toUpperCase();
+  cfg.initials=customInit||(cfg.name.length>=2?cfg.name.slice(0,2).toUpperCase():cfg.name.slice(0,1).toUpperCase()||'?');
+  state={score:0,streak:0,maxStreak:0,correct:0,round:1,answered:false,currentNum:null,currentTF:null,currentMCQ:null,currentGame:null,currentPyth:null,currentSqrt:null,cellState:{}};
+  resetPools();
+  document.getElementById('hud-total').textContent=cfg.turns;
+  document.getElementById('hud-name-pill').innerHTML=`<b>${cfg.name}</b>`;
+  document.getElementById('prog-fill').style.background=cfg.txColor||'#378ADD';
+  updateHUD();showScreen('game');loadRound();
+}
+
+function restartSame(){
+  state={score:0,streak:0,maxStreak:0,correct:0,round:1,answered:false,currentNum:null,currentTF:null,currentMCQ:null,currentGame:null,currentPyth:null,currentSqrt:null,cellState:{}};
+  resetPools();updateHUD();showScreen('game');loadRound();
+}
+
+function showScreen(s){
+  ['setup','game','end'].forEach(n=>document.getElementById('screen-'+n).classList.toggle('hidden',n!==s));
+  if(s==='game'){
+    const area=document.getElementById('game-area');
+    area.style.background=cfg.cardColor;
+    area.style.color=cfg.txColor;
+  }
+}
+
+function updateHUD(){
+  document.getElementById('hud-score').textContent=state.score;
+  document.getElementById('hud-streak').textContent=state.streak;
+  document.getElementById('hud-round').textContent=state.round;
+  document.getElementById('prog-fill').style.width=Math.round(Math.min((state.round-1)/cfg.turns*100,100))+'%';
+}
+
+function pickGame(){
+  const types=getGameTypes();
+  if(cfg.mode==='random') return types[Math.floor(Math.random()*types.length)];
+  if(cfg.mode==='single') return cfg.singleGame;
+  return null;
+}
+
+function loadRound(){
+  if(state.round>cfg.turns){endGame();return;}
+  state.answered=false;
+  const pb=document.getElementById('pick-bar');
+  if(cfg.mode==='pick'){
+    pb.classList.remove('hidden');
+    const bb=document.getElementById('pick-bar-btns');
+    bb.innerHTML='';
+    getGameTypes().forEach(g=>{
+      const b=document.createElement('button');
+      b.className='gtype-btn';b.textContent=GAME_LABELS[g];
+      b.onclick=()=>{state.currentGame=g;bb.querySelectorAll('.gtype-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderGame()};
+      bb.appendChild(b);
+    });
+    const area=document.getElementById('game-area');
+    area.style.background=cfg.cardColor;
+    area.innerHTML='<div style="padding:1rem;text-align:center;color:var(--color-text-tertiary);font-size:14px">Pick a mini-game above</div>';
+  } else {
+    pb.classList.add('hidden');
+    state.currentGame=pickGame();
+    renderGame();
+  }
+}
+
+function renderGame(){
+  const g=state.currentGame;
+  const area=document.getElementById('game-area');
+  area.style.background=cfg.cardColor;
+  if(!g){area.innerHTML='<div style="padding:1rem;text-align:center;font-size:14px">Pick above</div>';return;}
+  if(g==='chart') renderChart(area);
+  else if(g==='sort') renderSort(area);
+  else if(g==='tf') renderTF(area);
+  else if(g==='mcq') renderMCQ(area);
+  else if(g==='fill') renderFill(area);
+  else if(g==='pyth_mcq') renderPythMCQ(area);
+  else if(g==='pyth_fill') renderPythFill(area);
+  else if(g==='pyth_tf') renderPythTF(area);
+  else if(g==='sqrt_mcq') renderSqrtMCQ(area);
+  else if(g==='sqrt_fill') renderSqrtFill(area);
+  else if(g==='sqrt_tf') renderSqrtTF(area);
+}
+
+function gameTag(g){return `<div class="game-tag">${GAME_LABELS[g]||''}</div>`;}
+function fbEl(){return '<div class="feedback" id="fb"></div>';}
+function nxBtn(){return '<button class="next-btn hidden" id="nx" onclick="nextRound()">Next →</button>';}
+
+function awardPoint(pts){
+  state.correct++;state.streak++;
+  if(state.streak>state.maxStreak)state.maxStreak=state.streak;
+  const bonus=state.streak>=3?1:0;
+  state.score+=pts+bonus;
+  return pts+bonus;
+}
+function penalize(){state.streak=0;}
+
+function setFB(good,msg){
+  const fb=document.getElementById('fb');
+  if(fb){fb.className='feedback '+(good?'good':'bad');fb.textContent=msg;}
+}
+function showNx(){const n=document.getElementById('nx');if(n)n.classList.remove('hidden');}
+
+function renderChart(area){
+  const num=getNum();state.currentNum=num;
+  state.cellState={nat:null,int:null,rat:null,real:null};
+  area.innerHTML=gameTag('chart')+`<div class="num-big">${num.d}</div><div class="num-hint">${cfg.diff==='easy'?num.h:''}</div>
+  <table class="chart-tbl"><thead><tr><th></th><th>Natural</th><th>Integer</th><th>Rational</th><th>Real</th></tr></thead>
+  <tbody><tr><td>${num.d}</td>
+  <td><button class="cb" id="cb-nat" onclick="toggleCB('nat')"></button></td>
+  <td><button class="cb" id="cb-int" onclick="toggleCB('int')"></button></td>
+  <td><button class="cb" id="cb-rat" onclick="toggleCB('rat')"></button></td>
+  <td><button class="cb" id="cb-real" onclick="toggleCB('real')"></button></td>
+  </tr></tbody></table>${fbEl()}<button class="next-btn" id="check-btn" onclick="checkChart()">Check answers</button>`;
+}
+function toggleCB(k){
+  if(state.answered)return;
+  const cs=state.cellState;
+  cs[k]=cs[k]===null?true:cs[k]===true?false:null;
+  const b=document.getElementById('cb-'+k);
+  b.className=cs[k]===true?'cb yes':cs[k]===false?'cb no':'cb';
+  b.textContent=cs[k]===true?'✓':cs[k]===false?'✗':'';
+}
+function checkChart(){
+  if(state.answered){nextRound();return;}
+  state.answered=true;
+  const num=state.currentNum;
+  const correct={nat:num.nat,int:num.int,rat:num.rat,real:num.real};
+  let all=true;
+  ['nat','int','rat','real'].forEach(k=>{
+    const user=state.cellState[k]===true,truth=correct[k];
+    const b=document.getElementById('cb-'+k);
+    b.textContent=truth?'✓':'✗';b.className=user===truth?'cb correct':'cb wrong';b.disabled=true;
+    if(user!==truth)all=false;
+  });
+  if(all){const pts=awardPoint(2);setFB(true,`Perfect! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,'Not quite — correct answers shown in green.');}
+  document.getElementById('check-btn').textContent='Next →';updateHUD();
+}
+
+const BUCKET_DEFS=[{key:'natural',label:'Natural',ex:'1,2,3…'},{key:'integer',label:'Integer',ex:'…−1,0,1…'},{key:'rational',label:'Rational',ex:'1/2,0.75…'},{key:'irrational',label:'Irrational',ex:'π,√2…'}];
+function renderSort(area){
+  const num=getNum();state.currentNum=num;
+  area.innerHTML=gameTag('sort')+'<div style="font-size:13px;color:var(--color-text-secondary);text-align:center;margin-bottom:3px">Most specific category?</div><div class="num-big">'+num.d+'</div><div class="num-hint">'+(cfg.diff==='easy'?num.h:'')+'</div><div class="buckets">'+BUCKET_DEFS.map(b=>`<div class="bucket" id="bkt-${b.key}" onclick="pickBucket('${b.key}')"><div class="bucket-name">${b.label}</div><div class="bucket-ex">${b.ex}</div></div>`).join('')+'</div>'+fbEl()+nxBtn();
+}
+function pickBucket(key){
+  if(state.answered)return;state.answered=true;
+  const correct=state.currentNum.label;
+  document.querySelectorAll('.bucket').forEach(b=>b.onclick=null);
+  document.getElementById('bkt-'+key).classList.add(key===correct?'correct-b':'wrong-b');
+  if(key!==correct){const cb=document.getElementById('bkt-'+correct);if(cb)cb.classList.add('correct-b');}
+  if(key===correct){const pts=awardPoint(1);setFB(true,`Correct! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,`Nope — ${state.currentNum.d} is ${correct}.`);}
+  showNx();updateHUD();
+}
+
+function renderTF(area){
+  const q=getTF();state.currentTF=q;
+  area.innerHTML=gameTag('tf')+`<div class="tf-stmt">${q.s}</div><div class="tf-btns"><button class="tf-btn" id="tf-t" style="color:#3B6D11" onclick="answerTF(true)">True</button><button class="tf-btn" id="tf-f" style="color:#A32D2D" onclick="answerTF(false)">False</button></div>${fbEl()}${nxBtn()}`;
+}
+function answerTF(choice){
+  if(state.answered)return;state.answered=true;
+  const q=state.currentTF;
+  document.getElementById('tf-t').disabled=true;document.getElementById('tf-f').disabled=true;
+  (choice?document.getElementById('tf-t'):document.getElementById('tf-f')).classList.add(choice===q.a?'correct':'wrong');
+  if(choice!==q.a)(q.a?document.getElementById('tf-t'):document.getElementById('tf-f')).classList.add('correct');
+  if(choice===q.a){const pts=awardPoint(1);setFB(true,`Correct! +${pts} — ${q.e}`);}
+  else{penalize();setFB(false,`Wrong — ${q.e}`);}
+  showNx();updateHUD();
+}
+
+function renderMCQ(area){
+  const q=getMCQ();state.currentMCQ=q;
+  area.innerHTML=gameTag('mcq')+`<div class="tf-stmt">${q.q}</div><div class="mcq-opts">${q.opts.map((o,i)=>`<div class="mcq-opt" id="mq-${i}" onclick="answerMCQ(${i})">${o}</div>`).join('')}</div>${fbEl()}${nxBtn()}`;
+}
+function answerMCQ(i){
+  if(state.answered)return;state.answered=true;
+  const q=state.currentMCQ;
+  document.querySelectorAll('.mcq-opt').forEach(b=>b.onclick=null);
+  document.getElementById('mq-'+i).classList.add(i===q.a?'correct':'wrong');
+  if(i!==q.a)document.getElementById('mq-'+q.a).classList.add('correct');
+  if(i===q.a){const pts=awardPoint(1);setFB(true,`Correct! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,'Not quite — correct answer highlighted.');}
+  showNx();updateHUD();
+}
+
+function renderFill(area){
+  const num=getNum();state.currentNum=num;
+  area.innerHTML=gameTag('fill')+'<div style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:3px">Type the most specific category:</div><div class="num-big">'+num.d+'</div><div class="num-hint">'+(cfg.diff==='easy'?num.h:'')+'</div><div style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-bottom:6px">natural / integer / rational / irrational</div><div class="fill-wrap"><input type="text" id="fill-in" placeholder="Type here…" maxlength="20" onkeydown="if(event.key===\'Enter\')submitFill()"><button class="fill-sub" onclick="submitFill()">Check</button></div>'+fbEl()+nxBtn();
+  setTimeout(()=>{const el=document.getElementById('fill-in');if(el)el.focus();},50);
+}
+function submitFill(){
+  if(state.answered)return;
+  const inp=document.getElementById('fill-in');if(!inp)return;
+  const val=inp.value.trim().toLowerCase();if(!val)return;
+  state.answered=true;inp.disabled=true;
+  const correct=state.currentNum.label;
+  const synonyms={nat:'natural',natural:'natural',integer:'integer',int:'integer',rational:'rational',rat:'rational',irrational:'irrational',irr:'irrational',irrat:'irrational',real:'real'};
+  const norm=synonyms[val]||val;
+  if(norm===correct){const pts=awardPoint(1);setFB(true,`Correct! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,`Not quite — answer is "${correct}".`);}
+  showNx();updateHUD();
+}
+
+function pythDiagram(p){
+  const showA=p.find!=='a',showB=p.find!=='b',showC=p.find!=='c';
+  const aVal=showA?p.a:'?',bVal=showB?p.b:'?',cVal=showC?p.c:'?';
+  return `<div class="pyth-diagram"><svg width="180" height="150" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="20,130 140,130 140,30" fill="none" stroke="var(--color-border-primary)" stroke-width="1.5"/>
+    <rect x="130" y="120" width="10" height="10" fill="none" stroke="var(--color-border-primary)" stroke-width="1"/>
+    <text x="80" y="145" text-anchor="middle" font-size="13" fill="var(--color-text-primary)">a = ${aVal}</text>
+    <text x="152" y="85" text-anchor="start" font-size="13" fill="var(--color-text-primary)">b = ${bVal}</text>
+    <text x="68" y="72" text-anchor="middle" font-size="13" fill="var(--color-text-secondary)">c = ${cVal}</text>
+  </svg></div>`;
+}
+
+function renderPythFill(area){
+  const p=getPyth();state.currentPyth=p;
+  const qtext=p.find==='c'?`Find the hypotenuse c (a=${p.a}, b=${p.b})`:`Find the missing side (${p.find}) — a=${p.a}, b=${p.b}, c=${p.c}`;
+  const answer=p[p.find];
+  state._pythAnswer=answer;
+  area.innerHTML=gameTag('pyth_fill')+`<div class="tf-stmt" style="font-size:14px">${qtext}</div>${cfg.diff==='easy'?pythDiagram(p):''}<div style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-bottom:6px">${cfg.diff==='easy'?p.hint:''}</div><div class="fill-wrap"><input type="text" id="fill-in" placeholder="Answer…" maxlength="10" onkeydown="if(event.key===\'Enter\')submitPythFill()"><button class="fill-sub" onclick="submitPythFill()">Check</button></div>${fbEl()}${nxBtn()}`;
+  setTimeout(()=>{const el=document.getElementById('fill-in');if(el)el.focus();},50);
+}
+function submitPythFill(){
+  if(state.answered)return;
+  const inp=document.getElementById('fill-in');if(!inp)return;
+  const val=inp.value.trim();if(!val)return;
+  state.answered=true;inp.disabled=true;
+  const correct=state._pythAnswer;
+  if(parseInt(val)===correct||val===String(correct)){const pts=awardPoint(2);setFB(true,`Correct! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,`Not quite — the answer is ${correct}.`);}
+  showNx();updateHUD();
+}
+
+function renderPythMCQ(area){
+  const q=getPythMCQ();state.currentMCQ=q;
+  area.innerHTML=gameTag('pyth_mcq')+`<div class="tf-stmt">${q.q}</div><div class="mcq-opts">${q.opts.map((o,i)=>`<div class="mcq-opt" id="mq-${i}" onclick="answerMCQ(${i})">${o}</div>`).join('')}</div>${fbEl()}${nxBtn()}`;
+}
+
+function renderPythTF(area){
+  const q=getPythTF();state.currentTF=q;
+  area.innerHTML=gameTag('pyth_tf')+`<div class="tf-stmt">${q.s}</div><div class="tf-btns"><button class="tf-btn" id="tf-t" style="color:#3B6D11" onclick="answerTF(true)">True</button><button class="tf-btn" id="tf-f" style="color:#A32D2D" onclick="answerTF(false)">False</button></div>${fbEl()}${nxBtn()}`;
+}
+
+function renderSqrtFill(area){
+  const s=getSqrt();state.currentSqrt=s;
+  area.innerHTML=gameTag('sqrt_fill')+`<div style="font-size:13px;color:var(--color-text-secondary);text-align:center;margin-bottom:4px">Evaluate:</div><div class="num-big">${s.expr}</div><div class="num-hint">${cfg.diff==='easy'?s.hint:''}</div><div class="fill-wrap"><input type="text" id="fill-in" placeholder="Answer…" maxlength="10" onkeydown="if(event.key===\'Enter\')submitSqrtFill()"><button class="fill-sub" onclick="submitSqrtFill()">Check</button></div>${fbEl()}${nxBtn()}`;
+  setTimeout(()=>{const el=document.getElementById('fill-in');if(el)el.focus();},50);
+}
+function submitSqrtFill(){
+  if(state.answered)return;
+  const inp=document.getElementById('fill-in');if(!inp)return;
+  const val=inp.value.trim();if(!val)return;
+  state.answered=true;inp.disabled=true;
+  const s=state.currentSqrt;
+  const correct=String(s.ans);
+  const userNum=parseFloat(val);
+  const correctNum=parseFloat(String(s.ans).replace('≈',''));
+  const close=!isNaN(userNum)&&!isNaN(correctNum)&&Math.abs(userNum-correctNum)<0.05;
+  if(val===correct||close){const pts=awardPoint(1);setFB(true,`Correct! +${pts}${state.streak>=3?' (streak bonus!)':''}`);}
+  else{penalize();setFB(false,`Not quite — ${s.expr} = ${s.ans}.`);}
+  showNx();updateHUD();
+}
+
+function renderSqrtMCQ(area){
+  const q=getSqrtMCQ();state.currentMCQ=q;
+  area.innerHTML=gameTag('sqrt_mcq')+`<div class="tf-stmt">${q.q}</div><div class="mcq-opts">${q.opts.map((o,i)=>`<div class="mcq-opt" id="mq-${i}" onclick="answerMCQ(${i})">${o}</div>`).join('')}</div>${fbEl()}${nxBtn()}`;
+}
+
+function renderSqrtTF(area){
+  const q=getSqrtTF();state.currentTF=q;
+  area.innerHTML=gameTag('sqrt_tf')+`<div class="tf-stmt">${q.s}</div><div class="tf-btns"><button class="tf-btn" id="tf-t" style="color:#3B6D11" onclick="answerTF(true)">True</button><button class="tf-btn" id="tf-f" style="color:#A32D2D" onclick="answerTF(false)">False</button></div>${fbEl()}${nxBtn()}`;
+}
+
+function nextRound(){state.round++;updateHUD();loadRound();}
+
+function endGame(){
+  const pct=Math.round(state.correct/cfg.turns*100);
+  const subjLabel={numbers:'Number types',pyth:'Pythagorean',sqrt:'Square roots',all:'All subjects'}[cfg.subject]||cfg.subject;
+  const entry={name:cfg.name,initials:cfg.initials,score:state.score,correct:state.correct,total:cfg.turns,pct,diff:cfg.diff,subject:subjLabel,bg:cfg.bgColor,tx:cfg.txColor,maxStreak:state.maxStreak,date:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  leaderboard.push(entry);leaderboard.sort((a,b)=>b.score-a.score);
+  const eb=document.getElementById('end-badge');
+  eb.textContent=cfg.initials;eb.style.background=cfg.bgColor;eb.style.color=cfg.txColor;
+  document.getElementById('end-name').textContent=cfg.name;
+  document.getElementById('end-diff').textContent=`${cfg.diff.charAt(0).toUpperCase()+cfg.diff.slice(1)} · ${subjLabel} · ${cfg.turns} rounds`;
+  document.getElementById('end-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${state.score}</div><div class="stat-lbl">Score</div></div>
+    <div class="stat-card"><div class="stat-val">${state.correct}/${cfg.turns}</div><div class="stat-lbl">Correct</div></div>
+    <div class="stat-card"><div class="stat-val">${pct}%</div><div class="stat-lbl">Accuracy</div></div>
+    <div class="stat-card"><div class="stat-val">${state.maxStreak}</div><div class="stat-lbl">Best streak</div></div>`;
+  renderLeaderboard();showScreen('end');
+}
+
+function renderLeaderboard(){
+  const el=document.getElementById('lb-list');
+  if(!leaderboard.length){el.innerHTML='<div style="text-align:center;color:var(--color-text-tertiary);padding:1rem;font-size:14px">No scores yet</div>';return;}
+  const medals=['1st','2nd','3rd'];
+  el.innerHTML=leaderboard.slice(0,10).map((e,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank">${i<3?medals[i]:'#'+(i+1)}</div>
+      <div class="lb-av" style="background:${e.bg};color:${e.tx}">${e.initials||'?'}</div>
+      <div class="lb-name">${e.name}<br><span class="lb-meta">${e.diff} · ${e.subject} · ${e.total}t · ${e.pct}% · ${e.date}</span></div>
+      <div class="lb-score">${e.score}</div>
+    </div>`).join('');
+}
+
+buildSetup();updatePreview();
+</script>
